@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is an **Industrial Treated Wastewater Quality Monitoring System** for catechol detection using electrochemical sensors. The system is designed to run on a **Raspberry Pi 3B+** microprocessor and uses LMP91000 Current Sensor transimpedance amplifiers (TIA) with cyclic voltammetry and chronoamperometry methods for accurate detection.
+This is an **Industrial Treated Wastewater Quality Monitoring System** for catechol detection using electrochemical sensors. The system is designed to run on a **Raspberry Pi 3B+** microprocessor and uses **LMP91000 Current Sensor** transimpedance amplifiers (TIA) with cyclic voltammetry and chronoamperometry methods for accurate detection.
 
 ---
 
