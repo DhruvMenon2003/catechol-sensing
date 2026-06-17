@@ -7,17 +7,22 @@ This is an **Industrial Treated Wastewater Quality Monitoring System** for catec
 ---
 
 ## Table of Contents
-
-1. [System Architecture](#system-architecture)
-2. [Hardware Configuration](#hardware-configuration)
-3. [File Structure](#file-structure)
-4. [Main Application Files](#main-application-files)
-5. [Function Documentation](#function-documentation)
-6. [Voltage Calculation & Bounds Explanation](#voltage-calculation--bounds-explanation)
-7. [Measurement Methods](#measurement-methods)
-8. [Data Processing Pipeline](#data-processing-pipeline)
+1.  [How to Use?](#hpw-to)
+2. [System Architecture](#system-architecture)
+3. [Hardware Configuration](#hardware-configuration)
+4. [File Structure](#file-structure)
+5. [Main Application Files](#main-application-files)
+6. [Function Documentation](#function-documentation)
+7. [Voltage Calculation & Bounds Explanation](#voltage-calculation--bounds-explanation)
+8. [Measurement Methods](#measurement-methods)
+9. [Data Processing Pipeline](#data-processing-pipeline)
 
 ---
+## How to Use
+Double click icon availabble on home scren to open prototype interface.
+To edit code , open Documents Folder. Open Python3. 
+Code for the Prototype Development Interface and App is located within this directory.
+Do not move files out of directory. Make modifications without changing file name. 
 
 ## System Architecture
 
