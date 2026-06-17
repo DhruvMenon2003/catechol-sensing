@@ -903,7 +903,7 @@ C (M) = 10^[log₁₀(I) - 4.1644] / 0.9033
 
 ## References
 
-- **LMP91000**: Electrochemical Sensor AFE Datasheet
+- **LMP91000**: Electrochemical Sensor AFE Datasheet(https://www.alldatasheet.com/datasheet-pdf/pdf/2195217/TI2/LMP91000.html)
 - **FFT Denoising**: Oppenheim & Schafer "Discrete-Time Signal Processing"
 - **Cyclic Voltammetry**: Bard & Faulkner "Electrochemical Methods"
 - **Chronoamperometry**: Cottrell Equation for transient current decay
@@ -911,11 +911,11 @@ C (M) = 10^[log₁₀(I) - 4.1644] / 0.9033
 
 ---
 
-## Contact & Support
+## Modified Code from 
 
-**Project**: Industrial Catechol Detection System
-**Author**: DhruvMenon2003
-**Institution**: Technical University/Research Lab
-**Status**: Active Development
+**Project**: Design and development of a portable, low-cost and customizable sensor platform based on a potentiostat mainly integrated by commercial off-the-shelf (COTS) electronic components.
+**Author**: Juan Poveda
+**Institution**: Technical University of Cartagena
+**Status**: Complete
 
 For questions or improvements, refer to the GitHub repository issues and discussions.
