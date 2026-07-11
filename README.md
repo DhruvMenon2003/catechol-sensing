@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is an **Industrial Treated Wastewater Quality Monitoring System** for catechol detection using electrochemical sensors. The system is designed to run on a **Raspberry Pi 3B+** microprocessor and uses **LMP91000 Current Sensor** transimpedance amplifiers (TIA) with cyclic voltammetry and chronoamperometry methods and **integrated piecewise linear calibration function** for accurate detection.
+This is an **Industrial Treated Wastewater Quality Monitoring System** for catechol detection using electrochemical sensors. The system is designed to run on a **Raspberry Pi 3B+** microprocessor and uses **LMP91000 Current Sensor** transimpedance amplifiers (TIA) with cyclic voltammetry and chronoamperometry methods and **integrated piecewise linear calibration function(optional)** for accurate detection.
 
 ---
 
@@ -20,13 +20,20 @@ This is an **Industrial Treated Wastewater Quality Monitoring System** for catec
 
 ---
 ## How to Use
-Double click icon availabble on home scren to open prototype interface.
-To edit code , open Documents Folder. Open Python3. 
-Code for the Prototype Development Interface and App is located within this directory.
-Do not move files out of directory. Make modifications without changing file name. 
+**Modern Interface**: Double-click the app icon on the home screen to launch the modern CustomTkinter-based interface.
+**For Development**:
+- Open Documents Folder and launch Python3
+- Code for the Prototype Development Interface and App is located within this directory
+- **Do not move files out of directory**
+- Make modifications without changing file names
 
 ## System Architecture
-
+**Workflow Steps**:
+1. Welcome page with system information
+2. Sample insertion verification
+3. pH buffer configuration (ABS+PBS, target pH 6.5)
+4. Real-time calibration monitoring with safety assessment
+5. Automated concentration calculation and risk classification
 ### Overview
 ```
 Electrochemical Sensor (LMP91000)
@@ -41,6 +48,8 @@ Operating Mode Selection (Deep Sleep, 3-Lead AC, etc.)
     ↓
 Data Processing (FFT Denoising, Peak Analysis)
     ↓
+Calibration(Default-> Linear, Optional-> Piecewise Linear)
+    ↓
 Graphical Interface (Tkinter) + Safety Monitoring (Modern UI)
 ```
 
@@ -49,6 +58,7 @@ Graphical Interface (Tkinter) + Safety Monitoring (Modern UI)
 - **Dual measurement methods**: Cyclic Voltammetry (CV) and Chronoamperometry (CA)
 - **Advanced signal processing**: FFT-based denoising with frequency domain filtering
 - **Peak-to-RMS analysis**: Frequency degradation analysis
+- **Piecewise linear calibration**: Multi-segment calibration for improved accuracy across concentration ranges
 - **Safety monitoring**: Real-time toxic concentration alerts
 - **Modern GUI**: CustomTkinter-based interface with calibration curves
 
@@ -84,7 +94,7 @@ The primary interface application handling:
 - User interface management
 - Data visualization
 - Signal processing and denoising
-- Concentration calculations
+- Concentration calculations using a linear calibration function with optional piecewise linear calibration
 
 ### 2. `modern app interface.py` (~300 lines)
 Modern CustomTkinter-based GUI featuring:
@@ -93,6 +103,7 @@ Modern CustomTkinter-based GUI featuring:
 - pH buffer configuration
 - Real-time calibration and safety monitoring
 - Live current reading display
+- Concentration calculations using a linear calibration function with optional piecewise linear calibration
 
 ### 3. `var.py` and `settings.py` (External Dependencies)
 Configuration files containing:
@@ -100,6 +111,7 @@ Configuration files containing:
 - TIA configuration constants
 - Operating mode constants
 - I2C communication parameters
+- Piecewise linear calibration segment definitions
 
 ---
 
