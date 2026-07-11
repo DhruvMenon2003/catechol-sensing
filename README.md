@@ -531,7 +531,7 @@ init(LOCKWR, TIA, REFCN_BIAS_N[0], OPMODE)
 For each of 54 voltage steps (0-53):
   1. Apply voltage via step(FULL_SWEEP[p])
   2. Read ADC value via printdout(p)
-  3. Calculate current: DATA_cv[p] = 2*raw_current + 15
+  3. Calculate current
   4. Update progress bar (12% increment per step)
   5. Update graph
   6. Sleep 1 second between measurements
