@@ -747,7 +747,7 @@ def sweep(TIA,OPMODE):
             #result = stats.mode(current,keepdims=True)
             #mode_current = result.mode[0]
             #print(f"Mode={mode_current}")
-            DATA_cv[p] = 2*aux[0]+15
+            DATA_cv[p] = aux[0]
             pval = pval + 12 # Update Progress Bar
             pb['value']=pval
             pb.update_idletasks()
