@@ -253,6 +253,7 @@ smoothed_data = smooth(data, 64)  # 64-point moving average
    - Applies Hanning window to each segment to reduce spectral leakage
    - Formula: `windowed_signal = segment × hanning_window`
    - Hanning window: `w(n) = 0.5 × [1 - cos(2π n/(N-1))]` for n = 0 to N-1
+     w(n) is maximized at n=(N-1)/2 and minimum at n=0 and n=N-1 meaning that the discontinuities at extremas are smoothened out preserving the signal.
                  
 3. **FFT Computation** [Lines 276-295]
    - Computes FFT for each segment and combined signal
