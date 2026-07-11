@@ -192,7 +192,7 @@ CALIBRATION_SEGMENTS = [
 If measured current = 15.5 µA
 
 Check segments:
-- Segment 1: (0-100 µM) �� If true, use slope=0.1499, intercept=-0.4881
+- Segment 1: (0-100 µM) -> Use slope=0.1499, intercept=-0.4881
 - Result: C = (15.5 - (-0.4881)) / 0.1499 = 15.5 + 0.4881 / 0.1499 ≈ 107.2 µM
 - Out of range! → Check Segment 2
 
