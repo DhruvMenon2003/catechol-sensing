@@ -718,7 +718,7 @@ current = 571.59 + ((volts - (vref/2)) / (TIAG)) * 1000000
      Concentration (µM) = (Max_Current - b) / m
      ```
      For example, m = 0.1499 (slope), b = -0.4881 (y-intercept)
-      - **Fallback Piecewise Linear Calibration**:
+   - **Fallback Piecewise Linear Calibration**:
      ```
      Concentration (µM) = apply_piecewise_calibration(max_current)
      ```
