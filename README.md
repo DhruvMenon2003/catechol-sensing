@@ -530,11 +530,10 @@ init(LOCKWR, TIA, REFCN_BIAS_N[0], OPMODE)
 ```
 For each of 54 voltage steps (0-53):
   1. Apply voltage via step(FULL_SWEEP[p])
-  2. Read ADC value via printdout(p)
-  3. Calculate current
-  4. Update progress bar (12% increment per step)
-  5. Update graph
-  6. Sleep 1 second between measurements
+  2. Read and calculate the current from ADC value via printdout(p)
+  3. Update progress bar (12% increment per step)
+  4. Update graph
+  5. Sleep 1 second between measurements
 ```
 
 **Fixed Voltage (Chronoamperometry) Sweep** [Lines 763-806]:
