@@ -713,16 +713,16 @@ current = 571.59 + ((volts - (vref/2)) / (TIAG)) * 1000000
 
 9. **Concentration Calculation** [Lines 914-962]:
    - **For Catechol**:
+   - **Default Linear Calibration**:
      ```
      Concentration (µM) = (Max_Current - b) / m
      ```
-     Where: m = 0.1499 (slope), b = -0.4881 (y-intercept)
-   
-   - **For Ascorbic Acid/Progesterone**:
+     For example, m = 0.1499 (slope), b = -0.4881 (y-intercept)
+      - **Fallback Piecewise Linear Calibration**:
      ```
-     log₁₀(M) = (log₁₀(I_max) - b) / m
+     Concentration (µM) = apply_piecewise_calibration(max_current)
      ```
-     Uses logarithmic calibration curve
+     Automatically selects appropriate segment based on current magnitude
 
 10. **GPIO Indication** [Lines 909-910]:
     - Red LED OFF, Green LED ON (measurement complete)
