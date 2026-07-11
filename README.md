@@ -377,7 +377,61 @@ smoothed_data = smooth(data, 64)  # 64-point moving average
 ```
 
 ---
+### Calibration Function
 
+#### **`get_concentration_from_current(current, segments=None)`** [NEW]
+
+**Purpose**: Apply piecewise linear calibration to convert measured current to concentration
+
+**Parameters**:
+- `current` (float): Measured current in µA
+- `segments` (list, optional): Custom calibration segments (uses defaults if None)
+
+**Returns**:
+```python
+{
+    'concentration': float,      # Concentration in µM
+    'segment_index': int,        # Which segment was used
+    'confidence': float,         # Confidence score (0-1)
+    'unit': str                  # 'µM'
+}
+```
+
+**Implementation**:
+```python
+def get_concentration_from_current(current, segments=None):
+    """
+    Apply piecewise linear calibration.
+    Returns concentration with segment information.
+    """
+    if segments is None:
+        segments = CALIBRATION_SEGMENTS  # From settings.py
+    
+    for idx, segment in enumerate(segments):
+        conc = (current - segment['intercept']) / segment['slope']
+        min_c, max_c = segment['range']
+        
+        if min_c <= conc <= max_c:
+            confidence = calculate_confidence(conc, current, segment)
+            return {
+                'concentration': conc,
+                'segment_index': idx,
+                'confidence': confidence,
+                'unit': 'µM'
+            }
+    
+    # Out of range - return best estimate
+    segment = segments[-1]  # Use highest segment
+    conc = (current - segment['intercept']) / segment['slope']
+    return {
+        'concentration': conc,
+        'segment_index': len(segments) - 1,
+        'confidence': 0.5,  # Low confidence
+        'unit': 'µM'
+    }
+```
+
+---
 ### Display and Visualization Functions
 
 #### 5. **`display_fft_plots_in_window(data, denoised_signal, windowed_signal, ...)`** [Lines 136-235]
