@@ -105,8 +105,158 @@ METHOD_label = Label(root, text='Method')
 
 # ===== NEW: Storage for multiple frequency measurements =====
 frequency_measurements = {}  # Store CV data at different frequencies
+# ===== You can add any number of segments you want and update the ranges as per your calibration function range. =====
+CALIBRATION_SEGMENTS = {
+    'Catechol': [
+        {
+            'range': (0, 100),           # µM concentration range
+            'slope': 0.1499,             # µA/µM (lower sensitivity region)
+            'intercept': -0.4881         # µA
+        },
+        {
+            'range': (100, 500),         # µM concentration range
+            'slope': 0.1245,             # µA/µM (mid-range)
+            'intercept': 2.1543
+        },
+        {
+            'range': (500, 2000),        # µM concentration range
+            'slope': 0.0987,             # µA/µM (high concentration)
+            'intercept': 8.7654
+        }
+    ]
+}
 
 ############################################################################################
+##  PIECEWISE LINEAR CALIBRATION FUNCTION
+
+def get_concentration_from_current(current, use_piecewise=False, CALIBRATION_SEGMENTS):
+    """
+    Calculate concentration from measured current using linear or piecewise linear calibration.
+    
+    Parameters:
+    -----------
+    current : float
+        Measured current in µA
+    use_piecewise : bool
+        If True, use piecewise linear calibration; if False, use simple linear calibration
+    CALIBRATION_SEGMENTS
+    Returns:
+    --------
+    dict with keys:
+        - 'concentration': Concentration in µM
+        - 'segment_index': Which segment was used (for piecewise only)
+        - 'range_bool': Returns True if current in Range and False if Out of Range
+        - 'method': 'linear' or 'piecewise'
+        - 'unit': 'µM'
+    """
+    
+    result = {
+        'concentration': 0.0,
+        'segment_index': -1 ,
+        'range_bool': True, # Is the current in range or out of range in any of the available segments? 
+        'method': 'linear',
+        'unit': 'µM'
+    }
+    
+    # Default linear calibration coefficients
+    linear_coeffs = {
+        'Catechol': {'m': 0.1499, 'b': -0.4881, 'upperlimit': 0 , 'lowerlimit' : 500}
+    }
+    
+    # ===== PIECEWISE LINEAR CALIBRATION =====
+    if use_piecewise and substance in CALIBRATION_SEGMENTS:
+        segments = CALIBRATION_SEGMENTS[substance]
+        
+        # Try to find the appropriate segment
+        for idx, segment in enumerate(segments):
+            min_conc, max_conc = segment['range']
+            slope = segment['slope']
+            intercept = segment['intercept']
+            
+            # Calculate concentration using this segment
+            conc = (current - intercept) / slope
+            
+            # Check if concentration falls within this segment's range
+            if min_conc <= conc <= max_conc:
+                result['concentration'] = conc
+                result['segment_index'] = idx
+                result['range_bool'] = True  # Assume that falls within range by default
+                result['method'] = 'piecewise'
+                
+                print(f"✓ Concentration {conc:.2f} µM found in Segment {idx+1}")
+                print(f"  Range: {min_conc}-{max_conc} µM, Slope: {slope}, Intercept: {intercept}")
+                
+                return result
+        
+    # If out of range, use the highest segment as fallback
+    print(f"⚠ Concentration out of range! Using highest segment for estimation")
+    segment = segments[-1]
+    conc = (current - segment['intercept']) / segment['slope']
+    result['concentration'] = conc
+    result['segment_index'] = len(segments) - 1
+    result['range_bool'] = False  
+    result['method'] = 'piecewise'
+        
+    return result
+    
+    # ===== DEFAULT LINEAR CALIBRATION =====
+    result = {
+        'concentration': 0.0,
+        'range_bool': True, # Is the current in range or out of range in any of the available segments? 
+        'method': 'linear',
+        'unit': 'µM'
+    }    
+    if use_piecewise == False and substance in CALIBRATION_SEGMENTS:
+                    
+    else:
+        coeffs = linear_coeffs[substance]
+        m = coeffs['m']
+        b = coeffs['b']
+        
+        concentration = (current - b) / m
+        result['concentration'] = concentration
+        result['range_bool'] = False  
+        result['method'] = 'linear'
+              
+        print(f"Using Linear Calibration: C = ({current:.4f} - {b}) / {m} = {concentration:.2f} µM")
+        
+        return result
+
+
+def classify_safety(concentration):
+    """
+    Classify concentration as SAFE, HEALTH RISK, or UNSAFE TOXIC.
+    
+    Parameters:
+    -----------
+    concentration : float
+        Concentration in µM
+    
+    Returns:
+    --------
+    dict with 'status', 'color', and 'description'
+    """
+    ACUTE_LIMIT = 10.0      # Short-term exposure limit (µM)
+    CHRONIC_LIMIT = 181.0   # Long-term exposure limit (µM)
+    
+    if concentration > CHRONIC_LIMIT:
+        return {
+            'status': 'UNSAFE TOXIC',
+            'color': '#d32f2f',  # Red
+            'description': f'Concentration {concentration:.2f} µM exceeds chronic limit ({CHRONIC_LIMIT} µM)'
+        }
+    elif concentration > ACUTE_LIMIT:
+        return {
+            'status': 'HEALTH RISK',
+            'color': '#f57c00',  # Orange
+            'description': f'Concentration {concentration:.2f} µM exceeds acute limit ({ACUTE_LIMIT} µM)'
+        }
+    else:
+        return {
+            'status': 'SAFE',
+            'color': '#388e3c',  # Green
+            'description': f'Concentration {concentration:.2f} µM is below safe limit ({ACUTE_LIMIT} µM)'
+        }
 ##  PLOT CONFIG AND SWEEP MAIN FUNCTION
 
 f = Figure(figsize=(3,3), dpi=120, facecolor='white', frameon=False,tight_layout=True)
@@ -947,15 +1097,40 @@ def startCV():
 
     ##############################################
     if (variable_SUBSTANCE.get()=='Catechol'):
-            ########## DATA TO FILL ############
+              ########## ===== NEW: INTEGRATED PIECEWISE LINEAR CALIBRATION ===== ############
             W = 110.1 #Molecular weight (g/mol)
-            m =  0.1499#Slope of CC
-            b = -0.4881 #Offset of CC
-            ####################################
+            
+            # ===== Determine which calibration method to use =====
+            # Try piecewise linear first (if available and appropriate range)
+            use_piecewise = True  # Set to False to use only linear calibration
+            
             if ("{}".format(variable_METHOD.get())=="Fixed Voltage"):
-                Concentration = (max_current_val-b)/m
-                print(f"Catechol Concentration(uM) = {Concentration} "+'\n'+'\n')
-                results.insert('1.0', f"Catechol Concentration(uM) = {Concentration} "+'\n'+'\n')
+                cal_result = get_concentration_from_current(
+                    max_current_val, 
+                    substance='Catechol',
+                    use_piecewise=use_piecewise
+                )
+                
+                Concentration = cal_result['concentration']
+                method_used = cal_result['method']
+                confidence = cal_result['confidence']
+                
+                # Print results
+                print(f"\n{'='*70}")
+                print(f"CONCENTRATION CALCULATION - FIXED VOLTAGE (CA)")
+                print(f"{'='*70}")
+                print(f"Measured Current: {max_current_val:.6f} µA")
+                print(f"Calibration Method: {method_used.upper()}")
+                if cal_result['segment_index'] >= 0:
+                    print(f"Segment Used: {cal_result['segment_index'] + 1}")
+                print(f"Calculated Concentration: {Concentration:.2f} µM")
+                print(f"Confidence Score: {confidence:.2%}")
+                print(f"{'='*70}\n")
+                
+                # Display on GUI
+                results.insert('1.0', f">> {method_used.upper()} Calibration Applied\n")
+                results.insert('1.0', f"Catechol Concentration(uM) = {Concentration:.2f} \n")
+                results.insert('1.0', f"Confidence: {confidence:.2%}\n\n")
             elif ("{}".format(variable_METHOD.get())=="Cyclic Voltammetry"):
                 Concentration = (max(peak_Cathodic_Current,peak_Anodic_Current)-b)/m
                 print(f"Catechol Concentration(uM) = {Concentration} "+'\n'+'\n')
