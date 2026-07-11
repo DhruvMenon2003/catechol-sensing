@@ -114,7 +114,101 @@ Configuration files containing:
 - Piecewise linear calibration segment definitions
 
 ---
+## Calibration Methodology
 
+### Piecewise Linear Calibration Function
+
+The system implements an **integrated piecewise linear calibration function** to determine concentration from measured current with improved accuracy across multiple concentration ranges.
+
+#### Methodology Overview
+
+**Concept**: Instead of using a single linear or logarithmic calibration curve, the system divides the concentration range into multiple segments, each with its own linear calibration function.
+
+```
+Concentration (µM)
+    ↑
+    │     Segment 1        Segment 2        Segment 3
+    │  (Low range)      (Mid range)     (High range)
+    │    ╱────              ╱────              ╱────
+    │   ╱                  ╱                  ╱
+    │  ╱                  ╱                  ╱
+    └─────────────────────────────────────────────→ Current (µA)
+```
+
+#### Implementation Details
+
+**Segment Definition** [Configurable in settings.py]:
+```python
+CALIBRATION_SEGMENTS = [
+    {
+        'range': (0, 100),           # µM concentration range
+        'slope': 0.1499,             # µA/µM (lower sensitivity region)
+        'intercept': -0.4881         # µA
+    },
+    {
+        'range': (100, 500),         # µM concentration range
+        'slope': 0.1245,             # µA/µM (mid-range)
+        'intercept': 2.1543
+    },
+    {
+        'range': (500, 2000),        # µM concentration range
+        'slope': 0.0987,             # µA/µM (high concentration)
+        'intercept': 8.7654
+    }
+]
+```
+
+**Calculation Process**:
+
+1. **Measure Current** (I_measured in µA)
+   - Obtained from chronoamperometry or peak current from CV
+
+2. **Identify Segment**
+   - Compare I_measured against segment boundaries
+   - Select appropriate calibration segment
+
+3. **Calculate Concentration**
+   ```
+   C (µM) = (I_measured - intercept) / slope
+   ```
+   Using the slope and intercept of the selected segment
+
+4. **Validation**
+   - Check if calculated concentration falls within segment range
+   - If out of range, flag for recalibration or measurement repeat
+   - Apply confidence scoring based on residuals
+
+#### Advantages Over Single-Line Calibration
+
+- **Improved Accuracy**: Non-linear sensor response is approximated more accurately
+- **Extended Dynamic Range**: Better linearity across wide concentration ranges
+- **Reduced Calibration Drift**: Segment-specific coefficients adapt to hardware variations
+- **Environmental Adaptation**: Segments can be adjusted based on temperature or electrode condition
+- **Real-Time Confidence**: System can provide uncertainty estimates for each measurement
+
+#### Example Calculation
+
+```
+If measured current = 15.5 µA
+
+Check segments:
+- Segment 1: (0-100 µM) �� If true, use slope=0.1499, intercept=-0.4881
+- Result: C = (15.5 - (-0.4881)) / 0.1499 = 15.5 + 0.4881 / 0.1499 ≈ 107.2 µM
+- Out of range! → Check Segment 2
+
+- Segment 2: (100-500 µM) → Use slope=0.1245, intercept=2.1543
+- Result: C = (15.5 - 2.1543) / 0.1245 ≈ 107.1 µM ✓ (Within range)
+- **Final Concentration: 107.1 µM** (HEALTH RISK, 10 < C < 181)
+```
+
+#### Future Enhancements
+
+- **Adaptive Calibration**: Automatic segment coefficient updates based on reference standards
+- **Polynomial Segments**: Use 2nd-order polynomials within segments for enhanced accuracy
+- **Temperature Compensation**: Segment parameters adjust based on electrode temperature
+- **Electrode Aging Model**: Automatic drift correction over extended deployment
+
+---
 ## Function Documentation
 
 ### Core Signal Processing Functions
