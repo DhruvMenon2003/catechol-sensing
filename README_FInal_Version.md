@@ -18,7 +18,7 @@ This is an **Industrial Treated Wastewater Quality Monitoring System** for catec
 8. [Voltage Calculation \& Bounds Explanation](#voltage-calculation--bounds-explanation)
 9. [Measurement Methods](#measurement-methods)
 10. [Data Processing Pipeline](#data-processing-pipeline)
-11. [Chronoamperometry Planner (Section 6.2)](#chronoamperometry-planner-section-62)
+11. [Chronoamperometry Planner](#chronoamperometry-planner)
 
 \---
 
@@ -1474,18 +1474,18 @@ with a validated range) in `testINTEGRATEDFULL.py`
 
 
 
-## Changelog - Chronoamperometry Planner (Section 6.2)
+## Changelog - Chronoamperometry Planner
 
 ### Added
 
 * `computestockadditionschedule()` - recursive stock-aliquot schedule with achieved-concentration
-re-derivation and Stock > Target refusal (Section 6.2.1)
+re-derivation and Stock > Target refusal 
 * `computestabilizationtime()` - Savitzky-Golay joint slope+curvature plateau detector with 2%
-tolerance, 5-sample sustained window and 5% guard region (Section 6.2.2)
+tolerance, 5-sample sustained window and 5% guard region 
 * `computetimebetweenmeasurements()` - safetymargin x (tstabilisation + tmix) spike-timing
-rule (Section 6.2.3)
+rule
 * `openChronoPlanner()` + **"Chronoamperometry Planner"** menu action - dedicated input panel
-surfacing all three computations (Section 6.2.4)
+surfacing all three computations 
 
 ### Changed / Removed
 
