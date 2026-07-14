@@ -344,7 +344,7 @@ They must be re-fitted against real catechol standards before the numbers are qu
 
 ### Core Signal Processing Functions
 
-#### 1\. **`smooth(y, box\_pts)`** \[Lines 128-131]
+#### 1\. **`smooth(y, box pts)`** \[Lines 128-131]
 
 **Purpose**: Apply moving average filtering to smooth noisy data
 
@@ -369,15 +369,15 @@ smoothed\_data = smooth(data, 64)  # 64-point moving average
 
 \---
 
-#### 2\. **`fft\_denoise(data, sampling\_freq=250000, display\_plots=True)`** \[Lines 241-408]
+#### 2\. **`fft denoise(data, sampling freq=250000, display plots=True)`** \[Lines 241-408]
 
 **Purpose**: Remove high-frequency noise from cyclic voltammogram data using FFT-based denoising
 
 **Parameters**:
 
 * `data` (array-like): Current values (µA) from CV measurement
-* `sampling\_freq` (float): ADC sampling frequency in Hz (default: 250 kHz)
-* `display\_plots` (bool): If True, displays analysis in embedded Tkinter window
+* `sampling freq` (float): ADC sampling frequency in Hz (default: 250 kHz)
+* `display plots` (bool): If True, displays analysis in embedded Tkinter window
 
 **Processing Steps**:
 
