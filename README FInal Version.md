@@ -100,7 +100,7 @@ GPIO.setup(13, GPIO.OUT)  # Pin 13 = Green LED (Ready indicator)
 
 ## File Structure
 
-### 1\. `test\_INTEGRATEDFULL.py` (Main Application - \~1135 lines)
+### 1\. `testINTEGRATEDFULL.py` (Main Application - \~1135 lines)
 
 The primary interface application handling:
 
@@ -136,7 +136,7 @@ Configuration files containing:
 ## Calibration Methodology
 
 The system converts a measured current into a catechol concentration using **one shared
-function**, `get\_concentration\_from\_current()`, defined in `test\_INTEGRATEDFULL.py` and imported
+function**, `getconcentrationfromcurrent()`, defined in `testINTEGRATEDFULL.py` and imported
 by `modern app interface.py`. Both interfaces therefore always agree; there is no duplicated
 calibration arithmetic anywhere in the codebase.
 
@@ -144,8 +144,8 @@ Two modes are supported:
 
 |Mode|When to use|Selected by|
 |-|-|-|
-|**Piecewise linear** (default)|Wide dynamic range, sensor response bends away from a single straight line|`use\_piecewise=True`; "Piecewise Linear" on the touchscreen, "Piecewise calibration" checkbox on the dev interface|
-|**Linear** (classic)|Narrow range, single validated straight line, or when you want the legacy behaviour|`use\_piecewise=False`; "Linear" on the touchscreen, checkbox unticked on the dev interface|
+|**Piecewise linear** (default)|Wide dynamic range, sensor response bends away from a single straight line|`usepiecewise=True`; "Piecewise Linear" on the touchscreen, "Piecewise calibration" checkbox on the dev interface|
+|**Linear** (classic)|Narrow range, single validated straight line, or when you want the legacy behaviour|`usepiecewise=False`; "Linear" on the touchscreen, checkbox unticked on the dev interface|
 
 \---
 
@@ -155,21 +155,21 @@ Segments are stored the way they are *fitted*: you prepare standards of known co
 regress **i = mC + b** within each band.
 
 ```python
-CALIBRATION\_SEGMENTS = {
+CALIBRATIONSEGMENTS = {
     'Catechol': \[
-        {'conc\_range': (0.0,   100.0),  'slope': 0.1499, 'intercept': -0.4881},   # low  band
-        {'conc\_range': (100.0, 500.0),  'slope': 0.1245, 'intercept':  2.1543},   # mid  band
-        {'conc\_range': (500.0, 2000.0), 'slope': 0.0987, 'intercept':  8.7654}    # high band
+        {'concrange': (0.0,   100.0),  'slope': 0.1499, 'intercept': -0.4881},   # low  band
+        {'concrange': (100.0, 500.0),  'slope': 0.1245, 'intercept':  2.1543},   # mid  band
+        {'concrange': (500.0, 2000.0), 'slope': 0.0987, 'intercept':  8.7654}    # high band
     ]
 }
 ```
 
-Add as many segments as you like; keep them in ascending concentration order. `LINEAR\_COEFFS`
+Add as many segments as you like; keep them in ascending concentration order. `LINEARCOEFFS`
 holds the single-line fallback and its validated working range:
 
 ```python
-LINEAR\_COEFFS = {
-    'Catechol': {'slope': 0.1499, 'intercept': -0.4881, 'conc\_range': (0.0, 500.0)}
+LINEARCOEFFS = {
+    'Catechol': {'slope': 0.1499, 'intercept': -0.4881, 'concrange': (0.0, 500.0)}
 }
 ```
 
@@ -191,7 +191,7 @@ fitted lines are **not continuous**, so near a join two segments can both claim 
 There is a **gap** of \~0.10 µA between segments 1 and 2, and a **6.3 µA overlap** between
 segments 2 and 3.
 
-`build\_current\_breakpoints()` resolves this once, at import time:
+`buildcurrentbreakpoints()` resolves this once, at import time:
 
 1. For every segment, compute the current at its two concentration endpoints.
 2. Sort segments by current.
@@ -208,7 +208,7 @@ Segment 3:  61.2599  -> 206.1654 µA
 Calibrated window: -0.4881 to 206.1654 µA
 ```
 
-`calibration\_current\_window(substance, use\_piecewise)` returns this window, and the touchscreen
+`calibrationcurrentwindow(substance, usepiecewise)` returns this window, and the touchscreen
 app prints it whenever a reading falls outside it.
 
 \---
@@ -216,9 +216,9 @@ app prints it whenever a reading falls outside it.
 ### 3\. Concentration calculation
 
 ```
-C\_measured (µM) = (I\_measured - intercept\_segment) / slope\_segment
+Cmeasured (µM) = (Imeasured - interceptsegment) / slopesegment
 
-C\_true (µM)     = C\_measured x dilution\_factor
+Ctrue (µM)     = Cmeasured x dilutionfactor
 ```
 
 The dilution factor defaults to 1 (neat sample).
@@ -238,7 +238,7 @@ IS IN RANGE. MULTIPLY THE CORRESPONDING CONCENTRATION BY THE DILUTION FACTOR TO
 OBTAIN THE TRUE CONCENTRATION.
 ```
 
-`classify\_safety(None)` returns status `OUT OF RANGE` in a neutral blue-grey (`#455a64`) - never
+`classifysafety(None)` returns status `OUT OF RANGE` in a neutral blue-grey (`#455a64`) - never
 a green/orange/red safety colour, so an out-of-range reading can never be mistaken for a verdict.
 
 **Operator workflow**
@@ -249,7 +249,7 @@ dilution factor of **10**. Repeat / stack dilutions if needed; the factors multi
 (10 then 5 = **50**).
 3. Re-measure. When the current lands inside the calibrated window, type the dilution factor into
 the **Dilution factor** box and press **Apply**.
-4. The app reports `C\_measured x DF` as the true concentration, and the safety classification is
+4. The app reports `Cmeasured x DF` as the true concentration, and the safety classification is
 applied to that true value.
 
 The dilution box is always visible (default 1), so an in-range reading on a deliberately diluted
@@ -260,10 +260,10 @@ sample is also handled correctly.
 ### 5\. Function contract
 
 ```python
-get\_concentration\_from\_current(current,
+getconcentrationfromcurrent(current,
                                substance='Catechol',
-                               use\_piecewise=True,
-                               dilution\_factor=1.0,
+                               usepiecewise=True,
+                               dilutionfactor=1.0,
                                segments=None) -> dict
 ```
 
@@ -271,11 +271,11 @@ Returns:
 
 |Key|Type|Meaning|
 |-|-|-|
-|`concentration`|float or `None`|**True** concentration in µM (`raw x dilution\_factor`); `None` when out of range|
-|`raw\_concentration`|float or `None`|Concentration of the solution as actually measured|
-|`dilution\_factor`|float|Factor applied|
-|`segment\_index`|int|0-based index of the segment used; `-1` for linear mode or out of range|
-|`in\_range`|bool|`False` when the current falls outside the calibrated window|
+|`concentration`|float or `None`|**True** concentration in µM (`raw x dilutionfactor`); `None` when out of range|
+|`rawconcentration`|float or `None`|Concentration of the solution as actually measured|
+|`dilutionfactor`|float|Factor applied|
+|`segmentindex`|int|0-based index of the segment used; `-1` for linear mode or out of range|
+|`inrange`|bool|`False` when the current falls outside the calibrated window|
 |`method`|str|`'piecewise'` or `'linear'`|
 |`unit`|str|`'uM'`|
 |`message`|str|Human-readable status (dilution instructions when out of range)|
@@ -300,8 +300,8 @@ I = 300.00 µA, piecewise
   -> OUT OF RANGE. Dilute the sample.
 
 I = 5.00 µA, piecewise, DF = 10 (sample was diluted 1-in-10)
-  -> C\_measured = 36.61 µM
-  -> C\_true     = 36.61 x 10 = 366.12 µM
+  -> Cmeasured = 36.61 µM
+  -> Ctrue     = 36.61 x 10 = 366.12 µM
   -> UNSAFE TOXIC
 
 I = 80.00 µA, LINEAR mode
@@ -336,7 +336,7 @@ They must be re-fitted against real catechol standards before the numbers are qu
 * **Automatic dilution suggestion**: propose a factor from how far outside the window the reading is
 * **Polynomial segments** (2nd order) within bands
 * **Temperature compensation** and an **electrode aging / drift model**
-* **Error propagation** through the dilution chain, to attach an uncertainty to `C\_true`
+* **Error propagation** through the dilution chain, to attach an uncertainty to `Ctrue`
 
 \---
 
@@ -351,18 +351,18 @@ They must be re-fitted against real catechol standards before the numbers are qu
 **Parameters**:
 
 * `y` (array): Input signal to be smoothed
-* `box\_pts` (int): Size of the smoothing window
+* `boxpts` (int): Size of the smoothing window
 
 **Mechanism**:
 
-* Creates a normalized box kernel of size `box\_pts`
+* Creates a normalized box kernel of size `boxpts`
 * Performs convolution with mode='same' to maintain signal length
 * Returns smoothed signal without changing signal boundaries
 
 **Example Usage**:
 
 ```python
-smoothed\_data = smooth(data, 64)  # 64-point moving average
+smootheddata = smooth(data, 64)  # 64-point moving average
 ```
 
 **Output**: Smoothed numpy array preserving original length
@@ -388,7 +388,7 @@ smoothed\_data = smooth(data, 64)  # 64-point moving average
 2. **Windowing** \[Lines 270-278]
 
    * Applies Hanning window to each segment to reduce spectral leakage
-   * Formula: `windowed\_signal = segment × hanning\_window`
+   * Formula: `windowedsignal = segment × hanningwindow`
    * Hanning window: `w(n) = 0.5 × \[1 - cos(2π n/(N-1))]` for n = 0 to N-1. w(n) is maximized at n=(N-1)/2 and minimum at n=0 and n=N-1 meaning that the discontinuities at extremas are smoothened out preserving the signal.
 3. **FFT Computation** \[Lines 276-295]
 
@@ -404,25 +404,25 @@ smoothed\_data = smooth(data, 64)  # 64-point moving average
 5. **Filtering** \[Lines 328-347]
 
    * Creates brick-wall low-pass filter mask
-   * Formula: `filter\_mask = 1 if |frequency| < cutoff\_freq else 0`
-   * Applies filter in frequency domain: `filtered\_FFT = FFT × filter\_mask`
+   * Formula: `filtermask = 1 if |frequency| < cutofffreq else 0`
+   * Applies filter in frequency domain: `filteredFFT = FFT × filtermask`
 6. **Inverse FFT** \[Lines 350-361]
 
    * Converts filtered signal back to time domain
-   * Formula: `denoised\_signal = IFFT(filtered\_FFT)`
-   * Extracts real component: `denoised\_signal.real`
+   * Formula: `denoisedsignal = IFFT(filteredFFT)`
+   * Extracts real component: `denoisedsignal.real`
    * Reverses second segment and applies negative sign
 7. **Peak Rescaling** \[Lines 354-370]
 
    * Preserves peak magnitude of original signal
-   * Formula: `scaling\_factor = original\_peak / denoised\_peak`
-   * Applied: `denoised\_signal\_scaled = denoised\_signal × scaling\_factor`
+   * Formula: `scalingfactor = originalpeak / denoisedpeak`
+   * Applied: `denoisedsignalscaled = denoisedsignal × scalingfactor`
    * Prevents signal attenuation from affecting concentration calculations
 
 **Returns** \[Lines 408]:
 
-* `denoised\_signal` (ndarray): Filtered current values
-* `cutoff\_freq` (float): Automatically determined cutoff frequency
+* `denoisedsignal` (ndarray): Filtered current values
+* `cutofffreq` (float): Automatically determined cutoff frequency
 
 **Output Metrics**:
 
@@ -433,37 +433,37 @@ smoothed\_data = smooth(data, 64)  # 64-point moving average
 
 \---
 
-#### 3\. **`calculate\_peak\_to\_rms(data, window\_size=None)`** \[Lines 413-463]
+#### 3\. **`calculatepeaktorms(data, windowsize=None)`** \[Lines 413-463]
 
 **Purpose**: Calculate peak-to-RMS current ratio for signal quality assessment
 
 **Parameters**:
 
 * `data` (array-like): Current values (µA) from CV measurement
-* `window\_size` (int, optional): Size of analysis window around peak
+* `windowsize` (int, optional): Size of analysis window around peak
 
 **Calculations**:
 
 1. **Peak Current** \[Lines 451]:
 
-   * `i\_peak = max(|data|)`
+   * `ipeak = max(|data|)`
    * Absolute maximum current value
 2. **RMS (Root Mean Square) Current** \[Lines 454]:
 
-   * `i\_rms = sqrt(mean(data²))`
+   * `irms = sqrt(mean(data²))`
    * Represents effective noise/oscillation level
    * Standard deviation equivalent for AC signals
 3. **Peak-to-RMS Ratio** \[Lines 461]:
 
-   * `ratio = i\_peak / i\_rms`
+   * `ratio = ipeak / irms`
    * High ratio = sharp, clean peak (good signal quality)
    * Low ratio = broad, noisy peak (poor signal quality)
 
 **Returns**:
 
-* `peak\_to\_rms\_ratio` (float): Signal sharpness metric
-* `i\_peak` (float): Maximum current (µA)
-* `i\_rms` (float): RMS current (µA)
+* `peaktormsratio` (float): Signal sharpness metric
+* `ipeak` (float): Maximum current (µA)
+* `irms` (float): RMS current (µA)
 
 **Physical Interpretation**:
 
@@ -473,15 +473,15 @@ smoothed\_data = smooth(data, 64)  # 64-point moving average
 
 \---
 
-#### 4\. **`analyze\_frequency\_degradation(frequencies, cv\_data\_list, window\_size=None, plot=True)`** \[Lines 543-664]
+#### 4\. **`analyzefrequencydegradation(frequencies, cvdatalist, windowsize=None, plot=True)`** \[Lines 543-664]
 
 **Purpose**: Analyze peak-to-RMS ratio degradation across multiple measurement frequencies
 
 **Parameters**:
 
 * `frequencies` (array): List of frequencies (Hz) where CV measurements were taken
-* `cv\_data\_list` (list of arrays): Current data arrays for each frequency
-* `window\_size` (int, optional): Analysis window size
+* `cvdatalist` (list of arrays): Current data arrays for each frequency
+* `windowsize` (int, optional): Analysis window size
 * `plot` (bool): If True, generates degradation plots
 
 **Processing Steps**:
@@ -489,17 +489,17 @@ smoothed\_data = smooth(data, 64)  # 64-point moving average
 1. **Ratio Calculation** \[Lines 571-579]
 
    * Iterates through each frequency
-   * Calls `calculate\_peak\_to\_rms()` for each dataset
+   * Calls `calculatepeaktorms()` for each dataset
    * Stores peak current, RMS current, and ratio
 2. **Curve Fitting** \[Lines 581-614]
 
    * **Model Function**: `y = a + b × ln(x)`
    * **Initial Guess**: `p0 = \[max(ratios), -1]`
-   * Uses `scipy.optimize.curve\_fit()` with max 10,000 function evaluations
+   * Uses `scipy.optimize.curvefit()` with max 10,000 function evaluations
    * Calculates R² (coefficient of determination):
 
 ```
-     R² = 1 - (Σ(y\_actual - y\_fit)²) / (Σ(y\_actual - y\_mean)²)
+     R² = 1 - (Σ(yactual - yfit)²) / (Σ(yactual - ymean)²)
      ```
 
    * R² close to 1.0 indicates excellent fit
@@ -515,12 +515,12 @@ smoothed\_data = smooth(data, 64)  # 64-point moving average
 ```python
 {
     'frequencies': numpy array of frequencies (Hz),
-    'peak\_to\_rms\_ratios': list of ratio values,
-    'peak\_currents': list of peak current values (µA),
-    'rms\_currents': list of RMS current values (µA),
-    'fit\_params': \[a, b] coefficients for inverse log fit,
-    'fit\_quality': R² value (0 to 1),
-    'fit\_equation': String representation of fit
+    'peaktormsratios': list of ratio values,
+    'peakcurrents': list of peak current values (µA),
+    'rmscurrents': list of RMS current values (µA),
+    'fitparams': \[a, b] coefficients for inverse log fit,
+    'fitquality': R² value (0 to 1),
+    'fitequation': String representation of fit
 }
 ```
 
@@ -528,7 +528,7 @@ smoothed\_data = smooth(data, 64)  # 64-point moving average
 
 ### Calibration Function
 
-#### **`get\_concentration\_from\_current(current, segments=None)`** \[NEW]
+#### **`getconcentrationfromcurrent(current, segments=None)`** \[NEW]
 
 **Purpose**: Apply piecewise linear calibration to convert measured current to concentration
 
@@ -542,7 +542,7 @@ smoothed\_data = smooth(data, 64)  # 64-point moving average
 ```python
 {
     'concentration': float,      # Concentration in µM
-    'segment\_index': int,        # Which segment was used
+    'segmentindex': int,        # Which segment was used
     'confidence': float,         # Confidence score (0-1)
     'unit': str                  # 'µM'
 }
@@ -551,23 +551,23 @@ smoothed\_data = smooth(data, 64)  # 64-point moving average
 **Implementation**:
 
 ```python
-def get\_concentration\_from\_current(current, segments=None):
+def getconcentrationfromcurrent(current, segments=None):
     """
     Apply piecewise linear calibration.
     Returns concentration with segment information.
     """
     if segments is None:
-        segments = CALIBRATION\_SEGMENTS  # From settings.py
+        segments = CALIBRATIONSEGMENTS  # From settings.py
     
     for idx, segment in enumerate(segments):
         conc = (current - segment\['intercept']) / segment\['slope']
-        min\_c, max\_c = segment\['range']
+        minc, maxc = segment\['range']
         
-        if min\_c <= conc <= max\_c:
-            confidence = calculate\_confidence(conc, current, segment)
+        if minc <= conc <= maxc:
+            confidence = calculateconfidence(conc, current, segment)
             return {
                 'concentration': conc,
-                'segment\_index': idx,
+                'segmentindex': idx,
                 'confidence': confidence,
                 'unit': 'µM'
             }
@@ -577,7 +577,7 @@ def get\_concentration\_from\_current(current, segments=None):
     conc = (current - segment\['intercept']) / segment\['slope']
     return {
         'concentration': conc,
-        'segment\_index': len(segments) - 1,
+        'segmentindex': len(segments) - 1,
         'confidence': 0.5,  # Low confidence
         'unit': 'µM'
     }
@@ -587,7 +587,7 @@ def get\_concentration\_from\_current(current, segments=None):
 
 ### Display and Visualization Functions
 
-#### 5\. **`display\_fft\_plots\_in\_window(data, denoised\_signal, windowed\_signal, ...)`** \[Lines 136-235]
+#### 5\. **`displayfftplotsinwindow(data, denoisedsignal, windowedsignal, ...)`** \[Lines 136-235]
 
 **Purpose**: Create a 6-panel FFT analysis visualization in a non-blocking Tkinter window
 
@@ -628,7 +628,7 @@ def get\_concentration\_from\_current(current, segments=None):
 
 \---
 
-#### 6\. **`display\_degradation\_plots\_in\_window(frequencies, peak\_to\_rms\_ratios, ...)`** \[Lines 469-537]
+#### 6\. **`displaydegradationplotsinwindow(frequencies, peaktormsratios, ...)`** \[Lines 469-537]
 
 **Purpose**: Create 4-panel frequency degradation analysis visualization
 
@@ -665,13 +665,13 @@ def get\_concentration\_from\_current(current, segments=None):
 
 **Parameters**:
 
-* `TIA`: Transimpedance gain register value (from TIA\_dicc)
-* `OPMODE`: Operating mode register value (from OPMODE\_dicc)
+* `TIA`: Transimpedance gain register value (from TIAdicc)
+* `OPMODE`: Operating mode register value (from OPMODEdicc)
 
 **Initialization Phase** \[Lines 728-731]:
 
 ```python
-init(LOCKWR, TIA, REFCN\_BIAS\_N\[0], OPMODE)
+init(LOCKWR, TIA, REFCNBIASN\[0], OPMODE)
 ```
 
 * Unlocks sensor write access
@@ -689,7 +689,7 @@ init(LOCKWR, TIA, REFCN\_BIAS\_N\[0], OPMODE)
 
 ```
 For each of 54 voltage steps (0-53):
-  1. Apply voltage via step(FULL\_SWEEP\[p])
+  1. Apply voltage via step(FULLSWEEP\[p])
   2. Read and calculate the current from ADC value via printdout(p)
   3. Update progress bar (12% increment per step)
   4. Update graph
@@ -709,7 +709,7 @@ For 400 time points:
 **Shutdown Phase** \[Lines 811-814]:
 
 ```python
-init(LOCKRO, TIACN\_TIAG\_350\_\_RLOAD\_010, REFCN\_BIAS\_N\[0], MODECN\_OP\_MODE\_DEEPSLEEP)
+init(LOCKRO, TIACNTIAG350RLOAD010, REFCNBIASN\[0], MODECNOPMODEDEEPSLEEP)
 ```
 
 * Locks sensor to read-only
@@ -729,7 +729,7 @@ init(LOCKRO, TIACN\_TIAG\_350\_\_RLOAD\_010, REFCN\_BIAS\_N\[0], MODECN\_OP\_MOD
 #### Raw Calculation \[Lines 715-720]:
 
 ```python
-TIAG = TIA\_values\["{}".format(variable\_TIA.get())]  # TIA gain in Ohms
+TIAG = TIAvalues\["{}".format(variableTIA.get())]  # TIA gain in Ohms
 value = readadc()  # Raw ADC value (0 to 65,535)
 vref = 2.5  # Reference voltage in volts
 vmax = 5  # Maximum voltage range
@@ -745,7 +745,7 @@ volts = (vref/2) + (vmax - (vref/2)) \* (value) / (binmax)
 **Standard ADC to Voltage Conversion**:
 
 ```
-V = (value / binmax) × V\_max
+V = (value / binmax) × Vmax
 ```
 
 **This Project's Modified Approach**:
@@ -814,7 +814,7 @@ current = 571.59 + ((volts - (vref/2)) / (TIAG)) \* 1000000
    If ADC reads 32,768 (midpoint):
    volts = 1.25 + 1.875 × (32768/65535) = 1.25 + 0.9375 = 2.1875 V
    
-   voltage\_above\_baseline = 2.1875 - 1.25 = 0.9375 V
+   voltageabovebaseline = 2.1875 - 1.25 = 0.9375 V
    current = 571.59 + (0.9375 / 14000) × 10⁶
            = 571.59 + 66.96
            = 638.55 µA
@@ -892,7 +892,7 @@ current = 571.59 + ((volts - (vref/2)) / (TIAG)) \* 1000000
    * **Default Linear Calibration**:
 
 ```
-     Concentration (µM) = (Max\_Current - b) / m
+     Concentration (µM) = (MaxCurrent - b) / m
      ```
 
      For example, m = 0.1499 (slope), b = -0.4881 (y-intercept)
@@ -900,7 +900,7 @@ current = 571.59 + ((volts - (vref/2)) / (TIAG)) \* 1000000
    * **Fallback Piecewise Linear Calibration**:
 
 ```
-     Concentration (µM) = apply\_piecewise\_calibration(max\_current)
+     Concentration (µM) = applypiecewisecalibration(maxcurrent)
      ```
 
      Automatically selects appropriate segment based on current magnitude
@@ -947,7 +947,7 @@ current = 571.59 + ((volts - (vref/2)) / (TIAG)) \* 1000000
 
 1. Checks minimum of 2 frequency measurements
 2. Extracts frequency keys and corresponding data
-3. Calls `analyze\_frequency\_degradation()` with window\_size=None
+3. Calls `analyzefrequencydegradation()` with windowsize=None
 4. Generates embedded FFT analysis plots
 5. Saves results to text file with formatted tables and fit equations
 
@@ -959,10 +959,10 @@ current = 571.59 + ((volts - (vref/2)) / (TIAG)) \* 1000000
 
 **Functions**:
 
-* `option\_changed\_SUBSTANCE()` - Logs substance selection
-* `option\_changed\_TIA()` - Logs TIA gain selection
-* `option\_changed\_OPMODE()` - Logs operating mode selection
-* `option\_changed\_METHOD()` - Logs measurement method selection
+* `optionchangedSUBSTANCE()` - Logs substance selection
+* `optionchangedTIA()` - Logs TIA gain selection
+* `optionchangedOPMODE()` - Logs operating mode selection
+* `optionchangedMETHOD()` - Logs measurement method selection
 
 **Mechanism**: Variable tracing with `.trace("w", callback)` triggers callbacks on write
 
@@ -1086,16 +1086,16 @@ Safe / Health Risk / Toxic
 
 Contains all sensor register definitions:
 
-* TIA register values (TIACN\_TIAG\_\*\_RLOAD\_010)
-* Operating mode registers (MODECN\_OP\_MODE\_\*)
-* Reference voltage bias values (REFCN\_BIAS\_N/P\[0-13])
+* TIA register values (TIACNTIAG\*RLOAD010)
+* Operating mode registers (MODECNOPMODE\*)
+* Reference voltage bias values (REFCNBIASN/P\[0-13])
 * Communication lock/unlock commands (LOCKWR, LOCKRO)
 
 ### `settings.py` (External Import)
 
 Contains:
 
-* FULL\_SWEEP array (54-point voltage sweep)
+* FULLSWEEP array (54-point voltage sweep)
 * Register write/read/init functions
 * I2C device address and parameters
 * ADC reading function (readadc())
@@ -1111,19 +1111,19 @@ Substance: Catechol
 Molecular Weight: 110.1 g/mol
 Calibration: Linear (default) OR Piecewise Linear (optional, 3 segments)
 
---- LINEAR (LINEAR\_COEFFS) ---
+--- LINEAR (LINEARCOEFFS) ---
 Slope (m):      0.1499 µA/µM
 Intercept (b): -0.4881 µA
 Validated range: 0 - 500 µM
 Equation: C (µM) = (I - (-0.4881)) / 0.1499
 
---- PIECEWISE (CALIBRATION\_SEGMENTS) ---
+--- PIECEWISE (CALIBRATIONSEGMENTS) ---
 Seg 1:    0 -  100 µM   m = 0.1499   b = -0.4881    current  -0.4881 -> 14.5531 µA
 Seg 2:  100 -  500 µM   m = 0.1245   b =  2.1543    current  14.5531 -> 61.2599 µA
 Seg 3:  500 - 2000 µM   m = 0.0987   b =  8.7654    current  61.2599 -> 206.1654 µA
 
-Equation: C\_measured = (I - b\_segment) / m\_segment
-          C\_true     = C\_measured x dilution\_factor
+Equation: Cmeasured = (I - bsegment) / msegment
+          Ctrue     = Cmeasured x dilutionfactor
 
 Outside the calibrated current window -> OUT OF RANGE (no value returned; dilute the sample)
 ```
@@ -1175,8 +1175,8 @@ the next reading immediately; no restart needed.
 * **Dilution factor box + Apply button**: the reported concentration is
 `measured concentration x dilution factor`. Default is 1 (neat sample). Invalid or
 non-positive entries are rejected with an error dialog.
-* Concentration is computed by the shared `get\_concentration\_from\_current()` imported from
-`test\_INTEGRATEDFULL.py` - this file contains **no calibration constants of its own**, so the
+* Concentration is computed by the shared `getconcentrationfromcurrent()` imported from
+`testINTEGRATEDFULL.py` - this file contains **no calibration constants of its own**, so the
 touchscreen app and the development interface can never drift apart.
 * Safety classification display (applied to the **true**, dilution-corrected concentration):
 
@@ -1190,8 +1190,8 @@ the dilution factor.
 ### Safety Thresholds
 
 ```python
-ACUTE\_LIMIT = 10.0 µM     # Short-term exposure limit
-CHRONIC\_LIMIT = 181.0 µM  # Long-term exposure limit
+ACUTELIMIT = 10.0 µM     # Short-term exposure limit
+CHRONICLIMIT = 181.0 µM  # Long-term exposure limit
 ```
 
 ### Auto-Read Loop \[Lines 250-278]
@@ -1207,30 +1207,30 @@ CHRONIC\_LIMIT = 181.0 µM  # Long-term exposure limit
 ### 1\. Voltage to Current (Transimpedance)
 
 ```
-I (µA) = Baseline\_Offset + ((V - Vref/2) / R\_TIA) × 10⁶
+I (µA) = BaselineOffset + ((V - Vref/2) / RTIA) × 10⁶
 
 Where:
-- Baseline\_Offset = 571.59 µA (dark current)
+- BaselineOffset = 571.59 µA (dark current)
 - V = voltage from ADC (1.25 to 5.0 V)
 - Vref = 2.5 V (reference voltage)
-- R\_TIA = TIA resistance (2.75 kΩ to 350 kΩ)
+- RTIA = TIA resistance (2.75 kΩ to 350 kΩ)
 ```
 
 ### 2\. FFT-based Denoising
 
 ```
-Denoised\_Signal = IFFT(FFT(Windowed\_Signal) × LowPassFilter)
+DenoisedSignal = IFFT(FFT(WindowedSignal) × LowPassFilter)
 
 Where:
-- Windowed\_Signal = Original\_Signal × Hanning\_Window
-- LowPassFilter = 1 if |f| < f\_cutoff, else 0
-- f\_cutoff = Automatic (5% threshold) or Fallback (30% Nyquist)
+- WindowedSignal = OriginalSignal × HanningWindow
+- LowPassFilter = 1 if |f| < fcutoff, else 0
+- fcutoff = Automatic (5% threshold) or Fallback (30% Nyquist)
 ```
 
 ### 3\. Peak-to-RMS Ratio
 
 ```
-Peak\_to\_RMS = max(|I|) / sqrt(mean(I²))
+PeaktoRMS = max(|I|) / sqrt(mean(I²))
 
 Quality Assessment:
 - > 5: Excellent (noise < 20% of peak)
@@ -1241,7 +1241,7 @@ Quality Assessment:
 ### 4\. Frequency Degradation Fit
 
 ```
-Peak\_to\_RMS(f) = a + b × ln(f)
+PeaktoRMS(f) = a + b × ln(f)
 
 Parameters:
 - a: Intercept (peak sharpness at reference frequency)
@@ -1257,15 +1257,15 @@ C (µM) = (I - b) / m = (I + 0.4881) / 0.1499
 
 For Catechol (Piecewise Linear):
   1. select the segment k whose CURRENT interval contains I:
-         i\_lo(k) <= I <= i\_hi(k)
+         ilo(k) <= I <= ihi(k)
      where the interval edges come from i = m\*C + b evaluated at the segment's
      concentration bounds, with adjacent segments joined at the MIDPOINT of their
      boundary currents (this removes gaps and overlaps between independently fitted lines)
-  2. C\_measured (µM) = (I - b\_k) / m\_k
+  2. Cmeasured (µM) = (I - bk) / mk
   3. if no segment contains I  ->  OUT OF RANGE (no value returned)
 
 Dilution correction (both modes):
-C\_true (µM) = C\_measured x dilution\_factor
+Ctrue (µM) = Cmeasured x dilutionfactor
 
 For Ascorbic Acid (Log):
 log₁₀(M) = (log₁₀(I) - 4.1644) / 0.9033
@@ -1375,14 +1375,14 @@ For questions or improvements, refer to the GitHub repository issues and discuss
 
 ### Added
 
-* `CALIBRATION\_SEGMENTS` (concentration-domain segments) and `LINEAR\_COEFFS` (single-line fallback
-with a validated range) in `test\_INTEGRATEDFULL.py`
-* `build\_current\_breakpoints()` - converts concentration-domain segments into non-overlapping
+* `CALIBRATIONSEGMENTS` (concentration-domain segments) and `LINEARCOEFFS` (single-line fallback
+with a validated range) in `testINTEGRATEDFULL.py`
+* `buildcurrentbreakpoints()` - converts concentration-domain segments into non-overlapping
 **current-domain** intervals, joining neighbours at the midpoint of their boundary currents
-* `calibration\_current\_window()` - returns the (i\_min, i\_max) window a calibration can interpret
-* `OUT\_OF\_RANGE\_MESSAGE` - the single canonical dilution instruction, shared by both interfaces
+* `calibrationcurrentwindow()` - returns the (imin, imax) window a calibration can interpret
+* `OUTOFRANGEMESSAGE` - the single canonical dilution instruction, shared by both interfaces
 * Development interface: **"Piecewise calibration"** checkbox and a **Dilution factor** entry
-(`get\_dilution\_factor()`), wired into `startCV()`
+(`getdilutionfactor()`), wired into `startCV()`
 * Touchscreen app: **calibration method** segmented button and a **Dilution factor** box with an
 **Apply** button, plus a dedicated OUT OF RANGE state
 
