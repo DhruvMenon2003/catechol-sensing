@@ -145,7 +145,7 @@ Two modes are supported:
 
 |Mode|When to use|Selected by|
 |-|-|-|
-|**Piecewise linear** (default)|Wide dynamic range, sensor response bends away from a single straight line|`use_piecewise=True`; "Piecewise Linear" on the touchscreen, "Piecewise calibration" checkbox on the dev interface|
+|**Piecewise linear** (optional)|Wide dynamic range, sensor response bends away from a single straight line|`use_piecewise=True`; "Piecewise Linear" on the touchscreen, "Piecewise calibration" checkbox on the dev interface|
 |**Linear** (classic)|Narrow range, single validated straight line, or when you want the legacy behaviour|`use_piecewise=False`; "Linear" on the touchscreen, checkbox unticked on the dev interface|
 
 \---
