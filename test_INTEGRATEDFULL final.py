@@ -1469,15 +1469,15 @@ variable_METHOD.trace("w", option_changed_METHOD)
 
 
 ############################################################################################
-## ===== NEW: CHRONOAMPEROMETRY PLANNER (Technical Report Section 6.2) =====
+## ===== NEW: CHRONOAMPEROMETRY PLANNER  =====
 ##
 ##  ADDITIVE MODULE - no function, constant, or widget defined above this banner has been
 ##  modified. Everything chronoamperometry-planning related lives below it.
 ##
-##  Three standalone, side-effect-free computations (Section 6.2.4):
-##    1. compute_stock_addition_schedule    -> Section 6.2.1  "How much volume at each step?"
-##    2. compute_stabilization_time         -> Section 6.2.2  "How long before I measure?"
-##    3. compute_time_between_measurements  -> Section 6.2.3  "How long before the next spike?"
+##  Three standalone, side-effect-free computations :
+##    1. compute_stock_addition_schedule    -> "How much volume at each step?"
+##    2. compute_stabilization_time         ->   "How long before I measure?"
+##    3. compute_time_between_measurements  ->  "How long before the next spike?"
 ##
 ##  They are surfaced through the 'Chronoamperometry Planner' menu action, which opens a
 ##  dedicated input panel (openChronoPlanner).
@@ -1488,7 +1488,7 @@ def compute_stock_addition_schedule(target_concentrations,
                                     stock_concentration,
                                     initial_concentration=0.0):
     """
-    Section 6.2.1 - Recursive stock-addition (standard addition) schedule.
+     - Recursive stock-addition (standard addition) schedule.
 
     Given an ascending list of desired concentrations, the initial volume, the stock
     concentration and the background concentration (0 for clean buffer), compute the
@@ -1589,7 +1589,7 @@ def compute_stock_addition_schedule(target_concentrations,
     total_stock = 0.0
 
     for idx, C_i in enumerate(targets, start=1):
-        # Recursive formula (report Section 6.2.1):
+        # Recursive formula:
         # V_stock,t+1 = V0 (C_{t+1}-C_t)(C_stock-C_0) / [(C_stock-C_{t+1})(C_stock-C_t)]
         V_add = (V0 * (C_i - C_prev) * (Cs - C0)) / ((Cs - C_i) * (Cs - C_prev))
         V_i = V_prev + V_add
@@ -1621,7 +1621,7 @@ def compute_stabilization_time(current,
                                savgol_window=21,
                                savgol_polyorder=3):
     """
-    Section 6.2.2 - Stabilisation time: when a chronoamperometric reading is meaningful.
+    Stabilisation time: when a chronoamperometric reading is meaningful.
 
     A reading is only meaningful once the faradaic transient has decayed onto its
     steady-state plateau. On the plateau the curve is flat, so its curvature - the
@@ -1748,7 +1748,7 @@ def compute_time_between_measurements(t_stabilization,
                                       t_mix=30.0,
                                       safety_margin=1.2):
     """
-    Section 6.2.3 - Time between measurements: when to add the next spike.
+    Time between measurements: when to add the next spike.
 
     After a reading is taken, two independent processes must complete before the next
     stock aliquot is added and measured: (1) the freshly injected stock must
@@ -1799,7 +1799,7 @@ def compute_time_between_measurements(t_stabilization,
 
 def openChronoPlanner():
     """
-    'Chronoamperometry Planner' menu action (Section 6.2.4).
+    'Chronoamperometry Planner' menu action.
 
     Opens a dedicated input panel where the operator types the ascending list of
     desired concentrations, the initial volume, the stock concentration and the
@@ -1868,7 +1868,7 @@ def openChronoPlanner():
         if not sched['ok']:
             _ca_show('>> ' + sched['message'])
             return
-        lines = ['VOLUME SCHEDULE (Section 6.2.1)',
+        lines = ['VOLUME SCHEDULE ',
                  '%-6s %-14s %-14s %-12s %-14s'
                  % ('step', 'add (mL)', 'total (mL)', 'target uM', 'achieved uM')]
         for s in sched['steps']:
@@ -1893,15 +1893,15 @@ def openChronoPlanner():
             _ca_show('>> DATA_fv is empty. Run a Fixed Voltage measurement first.')
             return
         stab = compute_stabilization_time(transient, time_axis=times)
-        _ca_show('STABILISATION (Section 6.2.2): ' + stab['message'])
+        _ca_show('STABILISATION : ' + stab['message'])
         if stab['settled']:
             gap = compute_time_between_measurements(
                 stab['stabilization_time'],
                 t_mix=ca_tmix_entry.get(),
                 safety_margin=ca_margin_entry.get())
-            _ca_show('NEXT SPIKE (Section 6.2.3): ' + gap['message'] + '\n')
+            _ca_show('NEXT SPIKE : ' + gap['message'] + '\n')
         else:
-            _ca_show('NEXT SPIKE (Section 6.2.3): unavailable until the transient '
+            _ca_show('NEXT SPIKE ): unavailable until the transient '
                      'settles.\n')
 
     Button(planner, text='Compute Volume Schedule',
@@ -1910,7 +1910,7 @@ def openChronoPlanner():
            command=_ca_analyze_transient).grid(column=1, row=6, padx=8, pady=6, sticky='w')
 
     ca_output.insert('1.0',
-                     'Chronoamperometry Planner (Technical Report Section 6.2)\n'
+                     'Chronoamperometry Planner \n'
                      '1) Type targets, initial volume, stock and background, then '
                      'Compute Volume Schedule.\n'
                      '2) After a Fixed Voltage run, Analyze Last CA Transient for the '
