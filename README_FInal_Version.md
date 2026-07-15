@@ -1254,7 +1254,7 @@ the previous `ph == 6.5` check could only be satisfied by typing exactly "6.5")
 
 * Live calibration curve display (calibration.png)
 * Real-time current reading every 2 seconds
-* **Calibration method selector**: `Piecewise Linear` (default) / `Linear`. Switching re-evaluates
+* **Calibration method selector**: `Piecewise Linear` (optional) / `Linear(Default)`. Switching re-evaluates
 the next reading immediately; no restart needed.
 * **Dilution factor box + Apply button**: the reported concentration is
 `measured concentration x dilution factor`. Default is 1 (neat sample). Invalid or
@@ -1336,8 +1336,8 @@ Parameters:
 ### 5\. Concentration from Current
 
 ```
-For Catechol (Linear, default coefficients, validated 0-500 µM):
-C (µM) = (I - b) / m = (I + 0.4881) / 0.1499
+For Catechol (Linear, default coefficients):
+C (µM) = (I - b) / m 
 
 For Catechol (Piecewise Linear):
   1. select the segment k whose CURRENT interval contains I:
@@ -1419,8 +1419,8 @@ C (M) = 10^\[log₁₀(I) - 4.1644] / 0.9033
 * Repeat until the current lands inside the window; stacked dilution factors multiply
 * If the current is *below* the window, the sample may be below the detection limit, or the
 TIA gain is too low - raise the gain rather than diluting
-* If you are in Linear mode and the concentration exceeds 500 uM, switch to **Piecewise Linear**,
-which is calibrated up to 2000 uM
+* If you are in Linear mode and the concentration exceeds upper limit of linear range, switch to **Piecewise Linear**,
+which has a larger calibration range
 
 #### 7\. Concentration Steps Slightly at a Segment Boundary
 
