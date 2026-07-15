@@ -316,7 +316,7 @@ I = 80.00 µA, LINEAR mode
 
 * **Improved accuracy**: a bending sensor response is approximated far better by several short
 lines than by one long one.
-* **Extended dynamic range**.
+* **Extended calibration function range**.
 * **Honest limits**: readings outside the calibrated window are refused rather than extrapolated.
 * **Segment-specific coefficients** can absorb electrode-condition effects that vary with
 concentration.
